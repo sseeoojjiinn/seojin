@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            border: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+        
+        let snake = [{x: 10, y: 10}];
+        let food = {x: 15, y: 15};
+        let dx = 0;
+        let dy = 0;
+        let score = 0;
+        
+        function drawGame() {
+            clearCanvas();
+            moveSnake();
+            drawSnake();
+            drawFood();
+            drawScore();
+            
+            if (checkCollision()) {
+                gameOver();
+                return;
+            }
+            
+            setTimeout(drawGame, 100);
+        }
+        
+        function clearCanvas() {
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        function moveSnake() {
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            snake.unshift(head);
+            
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                generateFood();
+            } else {
+                snake.pop();
+            }
+        }
+        
+        function drawSnake() {
+            ctx.fillStyle = '#4CAF50';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
+            });
+        }
+        
+        function drawFood() {
+            ctx.fillStyle = '#FF5722';
+            ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
+        }
+        
+        function drawScore() {
+            ctx.fillStyle = '#333';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Score: ${score}`, 10, 30);
+        }
+        
+        function generateFood() {
+            food.x = Math.floor(Math.random() * tileCount);
+            food.y = Math.floor(Math.random() * tileCount);
+        }
+        
+        function checkCollision() {
+            const head = snake[0];
+            return (
+                head.x < 0 || head.x >= tileCount ||
+                head.y < 0 || head.y >= tileCount ||
+                snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)
+            );
+        }
+        
+        function gameOver() {
+            ctx.fillStyle = '#333';
+            ctx.font = '40px Arial';
+            ctx.fillText('Game Over!', canvas.width / 2 - 100, canvas.height / 2);
+            ctx.font = '20px Arial';
+            ctx.fillText('Press Space to Restart', canvas.width / 2 - 100, canvas.height / 2 + 40);
+        }
+        
+        function setDirection(key) {
+            switch(key) {
+                case 'w': if (dy === 0) { dx = 0; dy = -1; } break;
+                case 'a': if (dx === 0) { dx = -1; dy = 0; } break;
+                case 's': if (dy === 0) { dx = 0; dy = 1; } break;
+                case 'd': if (dx === 0) { dx = 1; dy = 0; } break;
+            }
+        }
+        
+        function startGame() {
+            snake = [{x: 10, y: 10}];
+            food = {x: 15, y: 15};
+            dx = 1;
+            dy = 0;
+            score = 0;
+            drawGame();
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') {
+                startGame();
+            } else {
+                setDirection(e.key);
+            }
+        });
+        
+        ctx.fillStyle = '#333';
+        ctx.font = '30px Arial';
+        ctx.fillText('Press Space to Start', canvas.width / 2 - 120, canvas.height / 2);
+    </script>
+</body>
+</html>
